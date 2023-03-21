@@ -7,16 +7,27 @@ public func configure(_ app: Application) throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
-    app.databases.use(.postgres(
-        hostname:"localhost",
-        port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
-        username: "mashaelalghunaim",
-        password: "",
-        database: "newpetsadoption"
-    ), as: .psql)
+    if let urlString = Environment.get("DATABASE_URL"),
+       var postgresConfig = PostgresConfiguration(url: urlString) {
+        var tlsConfig = TLSConfiguration.makeClientConfiguration()
+        tlsConfig.certificateVerification = .none
+        app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
+    } else{
+        app.databases.use(.postgres(
+            hostname:"localhost",
+            port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
+            username: "mashaelalghunaim",
+            password: "",
+            database: "newpetsadoption"
+        ), as: .psql)
+    }
+   
 
     app.migrations.add(CreatePets())
-    // Import your BooksController at the top of the file
+    if app.environment == .development{
+        try app.autoMigrate().wait()
+    }
+    
    
 
     // Inside the configure() function, register your BooksController
