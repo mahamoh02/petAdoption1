@@ -22,7 +22,7 @@ public func configure(_ app: Application) throws {
     // Inside the configure() function, register your BooksController
     let petsController = PetController()
     try app.register(collection: petsController)
-
+    app.http.server.configuration.port = Environment.get("PORT").flatMap(Int.init) ?? 8080
 
     // register routes
     try routes(app)
