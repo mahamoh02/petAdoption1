@@ -11,14 +11,15 @@ public func configure(_ app: Application) throws {
        var postgresConfig = PostgresConfiguration(url: urlString) {
         var tlsConfig = TLSConfiguration.makeClientConfiguration()
         tlsConfig.certificateVerification = .none
+        postgresConfig.tlsConfiguration = tlsConfig
         app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
     } else{
         app.databases.use(.postgres(
-            hostname:"localhost",
+            hostname:Environment.get("DATABASE_HOST") ?? "local host",
             port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
-            username: "mashaelalghunaim",
-            password: "",
-            database: "newpetsadoption"
+            username: Environment.get("DATABASE_USERNAME") ?? "mashaelalghunaim",
+            password: Environment.get("DATABASE_PASSWORD") ?? "",
+            database: Environment.get("DATABASE_NAME") ?? "newpetsadoption"
         ), as: .psql)
     }
    
